@@ -981,6 +981,7 @@ enum file_format {
 	UPPER_DISTANCE_MATRIX,
 	DISTANCE_MATRIX,
 	POINT_CLOUD,
+	VECTOR,
 	DIPHA,
 	SPARSE,
 	BINARY
@@ -1088,6 +1089,11 @@ compressed_lower_distance_matrix read_distance_matrix(std::istream& input_stream
 	return compressed_lower_distance_matrix(std::move(distances));
 }
 
+compressed_lower_distance_matrix read_vector(std::istream& input_stream) {
+	std::vector<value_t> distances;
+	return 0;
+}
+
 compressed_lower_distance_matrix read_dipha(std::istream& input_stream) {
 	if (read<int64_t>(input_stream) != 8067171840) {
 		std::cerr << "input is not a Dipha file (magic number: 8067171840)" << std::endl;
@@ -1129,6 +1135,8 @@ compressed_lower_distance_matrix read_file(std::istream& input_stream, const fil
 		return read_distance_matrix(input_stream);
 	case POINT_CLOUD:
 		return read_point_cloud(input_stream);
+	case VECTOR:
+		return read_vector(input_stream);
 	case DIPHA:
 		return read_dipha(input_stream);
 	default:
@@ -1152,6 +1160,7 @@ void print_usage_and_exit(int exit_code) {
 	    << "                     upper-distance (upper triangular distance matrix)" << std::endl
 	    << "         (default:)  distance       (distance matrix; only lower triangular part is read)" << std::endl
 	    << "                     point-cloud    (point cloud in Euclidean space)" << std::endl
+		<< "                     vector			(vector in Euclidean space)" << std::endl
 	    << "                     dipha          (distance matrix in DIPHA file format)" << std::endl
 	    << "                     sparse         (sparse distance matrix in sparse triplet format)"
 	    << std::endl
@@ -1207,6 +1216,8 @@ int main(int argc, char** argv) {
 				format = DISTANCE_MATRIX;
 			else if (parameter.rfind("point", 0) == 0)
 				format = POINT_CLOUD;
+			else if (parameter == "distVec")
+				format = VECTOR;
 			else if (parameter == "dipha")
 				format = DIPHA;
 			else if (parameter == "sparse")
