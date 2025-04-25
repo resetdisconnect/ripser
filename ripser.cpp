@@ -1058,7 +1058,6 @@ compressed_lower_distance_matrix read_lower_distance_matrix(std::istream& input_
 		distances.push_back(value);
 		input_stream.ignore();
 	}
-
 	return compressed_lower_distance_matrix(std::move(distances));
 }
 
@@ -1091,7 +1090,19 @@ compressed_lower_distance_matrix read_distance_matrix(std::istream& input_stream
 
 compressed_lower_distance_matrix read_vector(std::istream& input_stream) {
 	std::vector<value_t> distances;
-	return 0;
+	value_t value;
+	while (input_stream >> value) {
+		distances.push_back(value);
+	}
+
+	size_t num_values = distances.size();
+	size_t n = (1 + std::sqrt(1 + 8 * num_values)) / 2;
+
+	if (n * (n - 1) / 2 != num_values) {
+		std::cerr << "Invalid number of values for lower triangular distance matrix: " << num_values << std::endl;
+		exit(-1);
+	}
+	return compressed_lower_distance_matrix(std::move(distances));
 }
 
 compressed_lower_distance_matrix read_dipha(std::istream& input_stream) {
@@ -1216,7 +1227,7 @@ int main(int argc, char** argv) {
 				format = DISTANCE_MATRIX;
 			else if (parameter.rfind("point", 0) == 0)
 				format = POINT_CLOUD;
-			else if (parameter == "distVec")
+			else if (parameter == "vector")
 				format = VECTOR;
 			else if (parameter == "dipha")
 				format = DIPHA;
