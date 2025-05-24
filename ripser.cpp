@@ -1099,7 +1099,7 @@ compressed_lower_distance_matrix read_vector(std::istream& input_stream) {
 	size_t n = (1 + std::sqrt(1 + 8 * num_values)) / 2;
 
 	if (n * (n - 1) / 2 != num_values) {
-		std::cerr << "Invalid number of values for lower triangular distance matrix: " << num_values << std::endl;
+		std::cerr << "invalid number of values for lower triangular distance matrix" << std::endl;
 		exit(-1);
 	}
 	return compressed_lower_distance_matrix(std::move(distances));
