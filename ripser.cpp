@@ -981,6 +981,7 @@ enum file_format {
 	UPPER_DISTANCE_MATRIX,
 	DISTANCE_MATRIX,
 	POINT_CLOUD,
+	VECTOR,
 	DIPHA,
 	SPARSE,
 	BINARY
@@ -1057,7 +1058,6 @@ compressed_lower_distance_matrix read_lower_distance_matrix(std::istream& input_
 		distances.push_back(value);
 		input_stream.ignore();
 	}
-
 	return compressed_lower_distance_matrix(std::move(distances));
 }
 
@@ -1085,6 +1085,23 @@ compressed_lower_distance_matrix read_distance_matrix(std::istream& input_stream
 		}
 	}
 
+	return compressed_lower_distance_matrix(std::move(distances));
+}
+
+compressed_lower_distance_matrix read_vector(std::istream& input_stream) {
+	std::vector<value_t> distances;
+	value_t value;
+	while (input_stream >> value) {
+		distances.push_back(value);
+	}
+
+	size_t num_values = distances.size();
+	size_t n = (1 + std::sqrt(1 + 8 * num_values)) / 2;
+
+	if (n * (n - 1) / 2 != num_values) {
+		std::cerr << "invalid number of values for lower triangular distance matrix" << std::endl;
+		exit(-1);
+	}
 	return compressed_lower_distance_matrix(std::move(distances));
 }
 
@@ -1129,6 +1146,8 @@ compressed_lower_distance_matrix read_file(std::istream& input_stream, const fil
 		return read_distance_matrix(input_stream);
 	case POINT_CLOUD:
 		return read_point_cloud(input_stream);
+	case VECTOR:
+		return read_vector(input_stream);
 	case DIPHA:
 		return read_dipha(input_stream);
 	default:
@@ -1152,6 +1171,7 @@ void print_usage_and_exit(int exit_code) {
 	    << "                     upper-distance (upper triangular distance matrix)" << std::endl
 	    << "         (default:)  distance       (distance matrix; only lower triangular part is read)" << std::endl
 	    << "                     point-cloud    (point cloud in Euclidean space)" << std::endl
+		<< "                     vector         (vector in Euclidean space)" << std::endl
 	    << "                     dipha          (distance matrix in DIPHA file format)" << std::endl
 	    << "                     sparse         (sparse distance matrix in sparse triplet format)"
 	    << std::endl
@@ -1207,6 +1227,8 @@ int main(int argc, char** argv) {
 				format = DISTANCE_MATRIX;
 			else if (parameter.rfind("point", 0) == 0)
 				format = POINT_CLOUD;
+			else if (parameter == "vector")
+				format = VECTOR;
 			else if (parameter == "dipha")
 				format = DIPHA;
 			else if (parameter == "sparse")
