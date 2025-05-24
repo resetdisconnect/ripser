@@ -1171,7 +1171,7 @@ void print_usage_and_exit(int exit_code) {
 	    << "                     upper-distance (upper triangular distance matrix)" << std::endl
 	    << "         (default:)  distance       (distance matrix; only lower triangular part is read)" << std::endl
 	    << "                     point-cloud    (point cloud in Euclidean space)" << std::endl
-		<< "                     vector			(vector in Euclidean space)" << std::endl
+		<< "                     vector         (vector in Euclidean space)" << std::endl
 	    << "                     dipha          (distance matrix in DIPHA file format)" << std::endl
 	    << "                     sparse         (sparse distance matrix in sparse triplet format)"
 	    << std::endl
