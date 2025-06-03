@@ -613,11 +613,9 @@ public:
 		edges = get_edges();
 		std::sort(edges.rbegin(), edges.rend(),
 		          greater_diameter_or_smaller_index<diameter_index_t>);
-
 #ifdef COLLECT_PERSISTENCE_PAIRS
 		persistence_pairs.resize(dim_max+1);
 #endif
-
 		std::vector<index_t> vertices_of_edge(2);
 		for (auto e : edges) {
 			get_simplex_vertices(get_index(e), 1, n, vertices_of_edge.rbegin());
@@ -739,7 +737,6 @@ public:
 #ifdef INDICATE_PROGRESS
 		std::chrono::steady_clock::time_point next = std::chrono::steady_clock::now() + time_step;
 #endif
-
 #ifdef COLLECT_PERSISTENCE_PAIRS
 		persistence_pairs.resize(std::max(persistence_pairs.size(), static_cast<size_t>(dim + 1)));
 #endif
