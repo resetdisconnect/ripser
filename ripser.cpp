@@ -40,6 +40,7 @@
 
 //#define INDICATE_PROGRESS
 #define PRINT_PERSISTENCE_PAIRS
+#define COLLECT_PERSISTENCE_PAIRS
 
 //#define USE_ROBINHOOD_HASHMAP
 
@@ -404,6 +405,7 @@ template <typename DistanceMatrix> class ripser {
 	const std::vector<coefficient_t> multiplicative_inverse;
 	mutable std::vector<diameter_entry_t> cofacet_entries;
 	mutable std::vector<index_t> vertices;
+	std::vector<std::vector<std::pair<value_t, value_t>>> persistence_pairs;
 
 	struct entry_hash {
 		std::size_t operator()(const entry_t& e) const { return hash<index_t>()(::get_index(e)); }
@@ -603,35 +605,52 @@ public:
 
 	void compute_dim_0_pairs(std::vector<diameter_index_t>& edges,
 	                         std::vector<diameter_index_t>& columns_to_reduce) {
+/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 		std::cout << "persistence intervals in dim 0:" << std::endl;
 #endif
-
+*/
 		union_find dset(n);
 
 		edges = get_edges();
 		std::sort(edges.rbegin(), edges.rend(),
 		          greater_diameter_or_smaller_index<diameter_index_t>);
+
+#ifdef COLLECT_PERSISTENCE_PAIRS
+		persistence_pairs.resize(dim_max+1);
+#endif
+
 		std::vector<index_t> vertices_of_edge(2);
 		for (auto e : edges) {
 			get_simplex_vertices(get_index(e), 1, n, vertices_of_edge.rbegin());
 			index_t u = dset.find(vertices_of_edge[0]), v = dset.find(vertices_of_edge[1]);
 
 			if (u != v) {
+#ifdef COLLECT_PERSISTENCE_PAIRS
+				if (get_diameter(e) != 0) persistence_pairs[0].emplace_back(0.0, get_diameter(e));
+#endif
+/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 				if (get_diameter(e) != 0)
 					std::cout << " [0," << get_diameter(e) << ")" << std::endl;
 #endif
+*/
 				dset.link(u, v);
 			} else if ((dim_max > 0) && (get_index(get_zero_apparent_cofacet(e, 1)) == -1))
 				columns_to_reduce.push_back(e);
 		}
 		if (dim_max > 0) std::reverse(columns_to_reduce.begin(), columns_to_reduce.end());
 
+#ifdef COLLECT_PERSISTENCE_PAIRS
+		for (index_t i = 0; i < n; ++i)
+			if (dset.find(i) == i) persistence_pairs[0].emplace_back(0.0, std::numeric_limits<value_t>::infinity());
+#endif
+/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 		for (index_t i = 0; i < n; ++i)
 			if (dset.find(i) == i) std::cout << " [0, )" << std::endl;
 #endif
+*/
 	}
 
 	template <typename Column> diameter_entry_t pop_pivot(Column& column) {
@@ -718,15 +737,19 @@ public:
 
 	void compute_pairs(const std::vector<diameter_index_t>& columns_to_reduce,
 	                   entry_hash_map& pivot_column_index, const index_t dim) {
-
+/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 		std::cout << "persistence intervals in dim " << dim << ":" << std::endl;
 #endif
-
+*/
 		compressed_sparse_matrix<diameter_entry_t> reduction_matrix;
 		
 #ifdef INDICATE_PROGRESS
 		std::chrono::steady_clock::time_point next = std::chrono::steady_clock::now() + time_step;
+#endif
+
+#ifdef COLLECT_PERSISTENCE_PAIRS
+		persistence_pairs.resize(std::max(persistence_pairs.size(), static_cast<size_t>(dim + 1)));
 #endif
 		for (size_t index_column_to_reduce = 0; index_column_to_reduce < columns_to_reduce.size();
 		     ++index_column_to_reduce) {
@@ -773,6 +796,11 @@ public:
 
 						pivot = get_pivot(working_coboundary);
 					} else {
+#ifdef COLLECT_PERSISTENCE_PAIRS
+						value_t death = get_diameter(pivot);
+						if (death > diameter * ratio) persistence_pairs[dim].emplace_back(diameter, death);
+#endif
+/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 						value_t death = get_diameter(pivot);
 						if (death > diameter * ratio) {
@@ -782,6 +810,7 @@ public:
 							std::cout << " [" << diameter << "," << death << ")" << std::endl;
 						}
 #endif
+*/
 						pivot_column_index.insert({get_entry(pivot), index_column_to_reduce});
 
 						while (true) {
@@ -793,12 +822,17 @@ public:
 						break;
 					}
 				} else {
+#ifdef COLLECT_PERSISTENCE_PAIRS
+					persistence_pairs[dim].emplace_back(diameter, std::numeric_limits<value_t>::infinity());
+#endif
+/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 #ifdef INDICATE_PROGRESS
 					std::cerr << clear_line << std::flush;
 #endif
 					std::cout << " [" << diameter << ", )" << std::endl;
 #endif
+*/
 					break;
 				}
 			}
@@ -810,7 +844,7 @@ public:
 
 	std::vector<diameter_index_t> get_edges();
 
-	void compute_barcodes() {
+	std::vector<std::vector<std::pair<value_t, value_t>>> compute_barcodes() {
 		std::vector<diameter_index_t> simplices, columns_to_reduce;
 
 		compute_dim_0_pairs(simplices, columns_to_reduce);
@@ -825,6 +859,7 @@ public:
 				assemble_columns_to_reduce(simplices, columns_to_reduce, pivot_column_index,
 				                           dim + 1);
 		}
+		return persistence_pairs;
 	}
 };
 
