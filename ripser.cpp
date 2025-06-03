@@ -39,7 +39,7 @@
 //#define USE_COEFFICIENTS
 
 //#define INDICATE_PROGRESS
-#define PRINT_PERSISTENCE_PAIRS
+//#define PRINT_PERSISTENCE_PAIRS
 #define COLLECT_PERSISTENCE_PAIRS
 
 //#define USE_ROBINHOOD_HASHMAP
@@ -605,11 +605,9 @@ public:
 
 	void compute_dim_0_pairs(std::vector<diameter_index_t>& edges,
 	                         std::vector<diameter_index_t>& columns_to_reduce) {
-/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 		std::cout << "persistence intervals in dim 0:" << std::endl;
 #endif
-*/
 		union_find dset(n);
 
 		edges = get_edges();
@@ -629,12 +627,10 @@ public:
 #ifdef COLLECT_PERSISTENCE_PAIRS
 				if (get_diameter(e) != 0) persistence_pairs[0].emplace_back(0.0, get_diameter(e));
 #endif
-/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 				if (get_diameter(e) != 0)
 					std::cout << " [0," << get_diameter(e) << ")" << std::endl;
 #endif
-*/
 				dset.link(u, v);
 			} else if ((dim_max > 0) && (get_index(get_zero_apparent_cofacet(e, 1)) == -1))
 				columns_to_reduce.push_back(e);
@@ -645,12 +641,10 @@ public:
 		for (index_t i = 0; i < n; ++i)
 			if (dset.find(i) == i) persistence_pairs[0].emplace_back(0.0, std::numeric_limits<value_t>::infinity());
 #endif
-/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 		for (index_t i = 0; i < n; ++i)
 			if (dset.find(i) == i) std::cout << " [0, )" << std::endl;
 #endif
-*/
 	}
 
 	template <typename Column> diameter_entry_t pop_pivot(Column& column) {
@@ -737,11 +731,9 @@ public:
 
 	void compute_pairs(const std::vector<diameter_index_t>& columns_to_reduce,
 	                   entry_hash_map& pivot_column_index, const index_t dim) {
-/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 		std::cout << "persistence intervals in dim " << dim << ":" << std::endl;
 #endif
-*/
 		compressed_sparse_matrix<diameter_entry_t> reduction_matrix;
 		
 #ifdef INDICATE_PROGRESS
@@ -800,7 +792,6 @@ public:
 						value_t death = get_diameter(pivot);
 						if (death > diameter * ratio) persistence_pairs[dim].emplace_back(diameter, death);
 #endif
-/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 						value_t death = get_diameter(pivot);
 						if (death > diameter * ratio) {
@@ -810,7 +801,6 @@ public:
 							std::cout << " [" << diameter << "," << death << ")" << std::endl;
 						}
 #endif
-*/
 						pivot_column_index.insert({get_entry(pivot), index_column_to_reduce});
 
 						while (true) {
@@ -825,14 +815,12 @@ public:
 #ifdef COLLECT_PERSISTENCE_PAIRS
 					persistence_pairs[dim].emplace_back(diameter, std::numeric_limits<value_t>::infinity());
 #endif
-/*
 #ifdef PRINT_PERSISTENCE_PAIRS
 #ifdef INDICATE_PROGRESS
 					std::cerr << clear_line << std::flush;
 #endif
 					std::cout << " [" << diameter << ", )" << std::endl;
 #endif
-*/
 					break;
 				}
 			}
