@@ -1345,16 +1345,13 @@ std::vector<std::vector<std::pair<value_t, value_t>>> read_vector(ripser<Distanc
 }
 
 // [[Rcpp::export]]
-List ripser_vec(const NumericVector& dataset, int dim, double thresh, float ratio, int p) {
+List ripser_vec(const NumericVector& dataset, index_t dim, value_t thresh, float ratio, coefficient_t p) {
   std::vector<value_t> distances(dataset.begin(), dataset.end());
 
   // compare move with original vector
   compressed_lower_distance_matrix dist(std::move(distances));
-  index_t idx_dim = static_cast<index_t>(dim);
-  value_t val_thresh = static_cast<value_t>(thresh);
-  coefficient_t coeff_p = static_cast<coefficient_t>(p);
 
-  ripser<compressed_lower_distance_matrix> ripser_obj(std::move(dist), idx_dim, val_thresh, ratio, coeff_p);
+  ripser<compressed_lower_distance_matrix> ripser_obj(std::move(dist), dim, thresh, ratio, p);
 
   // we can rename result something more descriptive, i just used persistence_pairs above already and don't want confusion
   // naming it the same thing will not affect anything, however
