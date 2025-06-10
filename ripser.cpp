@@ -54,6 +54,9 @@
 #include <queue>
 #include <sstream>
 #include <unordered_map>
+#include "Rcpp.h"
+
+using namespace Rcpp;
 
 #ifdef USE_ROBINHOOD_HASHMAP
 
@@ -99,7 +102,7 @@ void check_overflow(index_t i) {
 
 class binomial_coeff_table {
 	std::vector<std::vector<index_t>> B;
-	
+
 
 public:
 	binomial_coeff_table(index_t n, index_t k) : B(k + 1, std::vector<index_t>(n + 1, 0)) {
@@ -405,7 +408,6 @@ template <typename DistanceMatrix> class ripser {
 	const std::vector<coefficient_t> multiplicative_inverse;
 	mutable std::vector<diameter_entry_t> cofacet_entries;
 	mutable std::vector<index_t> vertices;
-	std::vector<std::vector<std::pair<value_t, value_t>>> persistence_pairs;
 
 	struct entry_hash {
 		std::size_t operator()(const entry_t& e) const { return hash<index_t>()(::get_index(e)); }
@@ -420,6 +422,8 @@ template <typename DistanceMatrix> class ripser {
 	typedef hash_map<entry_t, size_t, entry_hash, equal_index> entry_hash_map;
 
 public:
+  std::vector<std::vector<std::pair<value_t, value_t>>> persistence_pairs;
+
 	ripser(DistanceMatrix&& _dist, index_t _dim_max, value_t _threshold, float _ratio,
 	       coefficient_t _modulus)
 	    : dist(std::move(_dist)), n(dist.size()),
@@ -733,7 +737,7 @@ public:
 		std::cout << "persistence intervals in dim " << dim << ":" << std::endl;
 #endif
 		compressed_sparse_matrix<diameter_entry_t> reduction_matrix;
-		
+
 #ifdef INDICATE_PROGRESS
 		std::chrono::steady_clock::time_point next = std::chrono::steady_clock::now() + time_step;
 #endif
@@ -1332,4 +1336,38 @@ int main(int argc, char** argv) {
 		}
 		exit(0);
 	}
+}
+
+template <typename DistanceMatrix>
+std::vector<std::vector<std::pair<value_t, value_t>>> read_vector(ripser<DistanceMatrix>& r) {
+  r.compute_barcodes();
+  return r.persistence_pairs;
+}
+
+// [[Rcpp::export]]
+List ripser_vec(const NumericVector& dataset, index_t dim, value_t thresh, float ratio, coefficient_t p) {
+  std::vector<value_t> distances(dataset.begin(), dataset.end());
+
+  // compare move with original vector
+  compressed_lower_distance_matrix dist(std::move(distances));
+
+  ripser<compressed_lower_distance_matrix> ripser_obj(std::move(dist), dim, thresh, ratio, p);
+
+  // we can rename result something more descriptive, i just used persistence_pairs above already and don't want confusion
+  // naming it the same thing will not affect anything, however
+  std::vector<std::vector<std::pair<value_t, value_t>>> result = read_vector(ripser_obj);
+
+  List output(result.size());
+  // same for d, we can rename if desired but stands for dimension
+  for (size_t d = 0; d < result.size(); ++d) {
+    const auto& pairs = result[d];
+    NumericMatrix mat(pairs.size(), 2);
+    for (size_t i = 0; i < pairs.size(); ++i) {
+      mat(i, 0) = pairs[i].first;
+      mat(i, 1) = pairs[i].second;
+    }
+    output[d] = mat;
+  }
+
+  return output;
 }
