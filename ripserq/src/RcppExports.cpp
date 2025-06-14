@@ -10,16 +10,6 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// rcpp_hello_world
-List rcpp_hello_world();
-RcppExport SEXP _ripserq_rcpp_hello_world() {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    rcpp_result_gen = Rcpp::wrap(rcpp_hello_world());
-    return rcpp_result_gen;
-END_RCPP
-}
 // ripser_vec
 List ripser_vec(const NumericVector& dataset, int dim, double thresh, float ratio, int p);
 RcppExport SEXP _ripserq_ripser_vec(SEXP datasetSEXP, SEXP dimSEXP, SEXP threshSEXP, SEXP ratioSEXP, SEXP pSEXP) {
@@ -37,7 +27,6 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_ripserq_rcpp_hello_world", (DL_FUNC) &_ripserq_rcpp_hello_world, 0},
     {"_ripserq_ripser_vec", (DL_FUNC) &_ripserq_ripser_vec, 5},
     {NULL, NULL, 0}
 };

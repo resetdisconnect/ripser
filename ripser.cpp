@@ -1346,31 +1346,37 @@ std::vector<std::vector<std::pair<value_t, value_t>>> read_vector(ripser<Distanc
 
 // [[Rcpp::export]]
 List ripser_vec(const NumericVector& dataset, int dim, double thresh, float ratio, int p) {
-  std::vector<value_t> distances(dataset.begin(), dataset.end());
+  try {
+    std::vector<value_t> distances(dataset.begin(), dataset.end());
 
-  // compare move with original vector
-  compressed_lower_distance_matrix dist(std::move(distances));
-  index_t idx_dim = static_cast<index_t>(dim);
-  value_t val_thresh = static_cast<value_t>(thresh);
-  coefficient_t coeff_p = static_cast<coefficient_t>(p);
+    // compare move with original vector
+    compressed_lower_distance_matrix dist(distances);
+    index_t idx_dim = static_cast<index_t>(dim);
+    value_t val_thresh = static_cast<value_t>(thresh);
+    coefficient_t coeff_p = static_cast<coefficient_t>(p);
 
-  ripser<compressed_lower_distance_matrix> ripser_obj(std::move(dist), idx_dim, val_thresh, ratio, coeff_p);
+    ripser<compressed_lower_distance_matrix> ripser_obj(std::move(dist), idx_dim, val_thresh, ratio, coeff_p);
 
-  // we can rename result something more descriptive, i just used persistence_pairs above already and don't want confusion
-  // naming it the same thing will not affect anything, however
-  std::vector<std::vector<std::pair<value_t, value_t>>> result = read_vector(ripser_obj);
+    // we can rename result something more descriptive, i just used persistence_pairs above already and don't want confusion
+    // naming it the same thing will not affect anything, however
+    std::vector<std::vector<std::pair<value_t, value_t>>> result = read_vector(ripser_obj);
 
-  List output(result.size());
-  // same for d, we can rename if desired but stands for dimension
-  for (size_t d = 0; d < result.size(); ++d) {
-    const auto& pairs = result[d];
-    NumericMatrix mat(pairs.size(), 2);
-    for (size_t i = 0; i < pairs.size(); ++i) {
-      mat(i, 0) = pairs[i].first;
-      mat(i, 1) = pairs[i].second;
+    List output(result.size());
+    // same for d, we can rename if desired but stands for dimension 
+    for (size_t d = 0; d < result.size(); ++d) {
+      const auto& pairs = result[d];
+      NumericMatrix mat(pairs.size(), 2);
+      for (size_t i = 0; i < pairs.size(); ++i) {
+        mat(i, 0) = pairs[i].first;
+        mat(i, 1) = pairs[i].second;
+      }
+      output[d] = mat;
     }
-    output[d] = mat;
-  }
 
-  return output;
+    return output;
+  } catch (const std::exception& e) {
+    Rcpp::stop(e.what());
+  } catch (...) {
+    Rcpp::stop("Unknown C++ exception occurred");
+  }
 }
