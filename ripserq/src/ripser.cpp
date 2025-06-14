@@ -53,10 +53,9 @@
 #include <numeric>
 #include <queue>
 #include <sstream>
+#include <string>
 #include <unordered_map>
-#include "Rcpp.h"
-
-using namespace Rcpp;
+#include <Rcpp.h>
 
 #ifdef USE_ROBINHOOD_HASHMAP
 
@@ -517,7 +516,7 @@ public:
 	};
 
 	diameter_entry_t get_zero_pivot_facet(const diameter_entry_t simplex, const index_t dim) {
-		static simplex_boundary_enumerator facets(0, *this);
+		simplex_boundary_enumerator facets(0, *this);
 		facets.set_simplex(simplex, dim);
 		while (facets.has_next()) {
 			diameter_entry_t facet = facets.next();
@@ -527,7 +526,7 @@ public:
 	}
 
 	diameter_entry_t get_zero_pivot_cofacet(const diameter_entry_t simplex, const index_t dim) {
-		static simplex_coboundary_enumerator cofacets(*this);
+		simplex_coboundary_enumerator cofacets(*this);
 		cofacets.set_simplex(simplex, dim);
 		while (cofacets.has_next()) {
 			diameter_entry_t cofacet = cofacets.next();
@@ -562,7 +561,7 @@ public:
 	                                entry_hash_map& pivot_column_index, index_t dim) {
 
 #ifdef INDICATE_PROGRESS
-		std::cerr << clear_line << "assembling columns" << std::flush;
+		Rcpp::Rcerr << clear_line << "assembling columns" << std::flush;
 		std::chrono::steady_clock::time_point next = std::chrono::steady_clock::now() + time_step;
 #endif
 
@@ -577,7 +576,7 @@ public:
 			while (cofacets.has_next(false)) {
 #ifdef INDICATE_PROGRESS
 				if (std::chrono::steady_clock::now() > next) {
-					std::cerr << clear_line << "assembling " << next_simplices.size()
+					Rcpp::Rcerr << clear_line << "assembling " << next_simplices.size()
 					          << " columns (processing " << std::distance(&simplices[0], &simplex)
 					          << "/" << simplices.size() << " simplices)" << std::flush;
 					next = std::chrono::steady_clock::now() + time_step;
@@ -596,21 +595,21 @@ public:
 		if (dim < dim_max) simplices.swap(next_simplices);
 
 #ifdef INDICATE_PROGRESS
-		std::cerr << clear_line << "sorting " << columns_to_reduce.size() << " columns"
+		Rcpp::Rcerr << clear_line << "sorting " << columns_to_reduce.size() << " columns"
 		          << std::flush;
 #endif
 
 		std::sort(columns_to_reduce.begin(), columns_to_reduce.end(),
 		          greater_diameter_or_smaller_index<diameter_index_t>);
 #ifdef INDICATE_PROGRESS
-		std::cerr << clear_line << std::flush;
+		Rcpp::Rcerr << clear_line << std::flush;
 #endif
 	}
 
 	void compute_dim_0_pairs(std::vector<diameter_index_t>& edges,
 	                         std::vector<diameter_index_t>& columns_to_reduce) {
 #ifdef PRINT_PERSISTENCE_PAIRS
-		std::cout << "persistence intervals in dim 0:" << std::endl;
+		Rcpp::Rcout << "persistence intervals in dim 0:" << std::endl;
 #endif
 		union_find dset(n);
 
@@ -684,7 +683,7 @@ public:
 	diameter_entry_t init_coboundary_and_get_pivot(const diameter_entry_t simplex,
 	                                               Column& working_coboundary, const index_t& dim,
 	                                               entry_hash_map& pivot_column_index) {
-		static simplex_coboundary_enumerator cofacets(*this);
+		simplex_coboundary_enumerator cofacets(*this);
 		bool check_for_emergent_pair = true;
 		cofacet_entries.clear();
 		cofacets.set_simplex(simplex, dim);
@@ -707,7 +706,7 @@ public:
 	template <typename Column>
 	void add_simplex_coboundary(const diameter_entry_t simplex, const index_t& dim,
 	                            Column& working_reduction_column, Column& working_coboundary) {
-		static simplex_coboundary_enumerator cofacets(*this);
+		simplex_coboundary_enumerator cofacets(*this);
 		working_reduction_column.push(simplex);
 		cofacets.set_simplex(simplex, dim);
 		while (cofacets.has_next()) {
@@ -734,7 +733,7 @@ public:
 	void compute_pairs(const std::vector<diameter_index_t>& columns_to_reduce,
 	                   entry_hash_map& pivot_column_index, const index_t dim) {
 #ifdef PRINT_PERSISTENCE_PAIRS
-		std::cout << "persistence intervals in dim " << dim << ":" << std::endl;
+		Rcpp::Rcout << "persistence intervals in dim " << dim << ":" << std::endl;
 #endif
 		compressed_sparse_matrix<diameter_entry_t> reduction_matrix;
 
@@ -762,7 +761,7 @@ public:
 			while (true) {
 #ifdef INDICATE_PROGRESS
 				if (std::chrono::steady_clock::now() > next) {
-					std::cerr << clear_line << "reducing column " << index_column_to_reduce + 1
+					Rcpp::Rcerr << clear_line << "reducing column " << index_column_to_reduce + 1
 					          << "/" << columns_to_reduce.size() << " (diameter " << diameter << ")"
 					          << std::flush;
 					next = std::chrono::steady_clock::now() + time_step;
@@ -797,9 +796,9 @@ public:
 						value_t death = get_diameter(pivot);
 						if (death > diameter * ratio) {
 #ifdef INDICATE_PROGRESS
-							std::cerr << clear_line << std::flush;
+							Rcpp::Rcerr << clear_line << std::flush;
 #endif
-							std::cout << " [" << diameter << "," << death << ")" << std::endl;
+							Rcpp::Rcout << " [" << diameter << "," << death << ")" << std::endl;
 						}
 #endif
 						pivot_column_index.insert({get_entry(pivot), index_column_to_reduce});
@@ -818,16 +817,16 @@ public:
 #endif
 #ifdef PRINT_PERSISTENCE_PAIRS
 #ifdef INDICATE_PROGRESS
-					std::cerr << clear_line << std::flush;
+					Rcpp::Rcerr << clear_line << std::flush;
 #endif
-					std::cout << " [" << diameter << ", )" << std::endl;
+					Rcpp::Rcout << " [" << diameter << ", )" << std::endl;
 #endif
 					break;
 				}
 			}
 		}
 #ifdef INDICATE_PROGRESS
-		std::cerr << clear_line << std::flush;
+		Rcpp::Rcerr << clear_line << std::flush;
 #endif
 	}
 
@@ -1040,7 +1039,7 @@ euclidean_distance_matrix read_point_cloud(std::istream& input_stream) {
 
 	euclidean_distance_matrix eucl_dist(std::move(points));
 	index_t n = eucl_dist.size();
-	std::cout << "point cloud with " << n << " points in dimension "
+	Rcpp::Rcout << "point cloud with " << n << " points in dimension "
 	          << eucl_dist.points.front().size() << std::endl;
 
 	return eucl_dist;
@@ -1123,21 +1122,18 @@ compressed_lower_distance_matrix read_vector(std::istream& input_stream) {
 	size_t n = (1 + std::sqrt(1 + 8 * num_values)) / 2;
 
 	if (n * (n - 1) / 2 != num_values) {
-		std::cerr << "invalid number of values for lower triangular distance matrix" << std::endl;
-		exit(-1);
+		Rcpp::stop("invalid number of values for lower triangular distance matrix");
 	}
 	return compressed_lower_distance_matrix(std::move(distances));
 }
 
 compressed_lower_distance_matrix read_dipha(std::istream& input_stream) {
 	if (read<int64_t>(input_stream) != 8067171840) {
-		std::cerr << "input is not a Dipha file (magic number: 8067171840)" << std::endl;
-		exit(-1);
+		Rcpp::stop("input is not a Dipha file (magic number: 8067171840)");
 	}
 
 	if (read<int64_t>(input_stream) != 7) {
-		std::cerr << "input is not a Dipha distance matrix (file type: 7)" << std::endl;
-		exit(-1);
+		Rcpp::stop("input is not a Dipha distance matrix (file type: 7)");
 	}
 
 	index_t n = read<int64_t>(input_stream);
@@ -1180,7 +1176,7 @@ compressed_lower_distance_matrix read_file(std::istream& input_stream, const fil
 }
 
 void print_usage_and_exit(int exit_code) {
-	std::cerr
+	Rcpp::Rcerr
 	    << "Usage: "
 	    << "ripser "
 	    << "[options] [filename]" << std::endl
@@ -1276,14 +1272,13 @@ int main(int argc, char** argv) {
 
 	std::ifstream file_stream(filename);
 	if (filename && file_stream.fail()) {
-		std::cerr << "couldn't open file " << filename << std::endl;
-		exit(-1);
+	  Rcpp::stop("couldn't open file %s", filename);
 	}
 
 	if (format == SPARSE) {
 		sparse_distance_matrix dist =
 		    read_sparse_distance_matrix(filename ? file_stream : std::cin);
-		std::cout << "sparse distance matrix with " << dist.size() << " points and "
+		Rcpp::Rcout << "sparse distance matrix with " << dist.size() << " points and "
 		          << dist.num_edges << "/" << (dist.size() * (dist.size() - 1)) / 2 << " entries"
 		          << std::endl;
 
@@ -1316,17 +1311,17 @@ int main(int argc, char** argv) {
 			if (d != std::numeric_limits<value_t>::infinity()) max_finite = std::max(max_finite, d);
 			if (d <= threshold) ++num_edges;
 		}
-		std::cout << "value range: [" << min << "," << max_finite << "]" << std::endl;
+		Rcpp::Rcout << "value range: [" << min << "," << max_finite << "]" << std::endl;
 
 		if (threshold == std::numeric_limits<value_t>::max()) {
-			std::cout << "distance matrix with " << dist.size()
+			Rcpp::Rcout << "distance matrix with " << dist.size()
 			          << " points, using threshold at enclosing radius " << enclosing_radius
 			          << std::endl;
 			ripser<compressed_lower_distance_matrix>(std::move(dist), dim_max, enclosing_radius,
 			                                         ratio, modulus)
 			    .compute_barcodes();
 		} else {
-			std::cout << "sparse distance matrix with " << dist.size() << " points and "
+			Rcpp::Rcout << "sparse distance matrix with " << dist.size() << " points and "
 			          << num_edges << "/" << (dist.size() * (dist.size() - 1)) / 2 << " entries"
 			          << std::endl;
 
@@ -1344,8 +1339,9 @@ std::vector<std::vector<std::pair<value_t, value_t>>> read_vector(ripser<Distanc
   return r.persistence_pairs;
 }
 
+//' @export
 // [[Rcpp::export]]
-List ripser_vec(const NumericVector& dataset, int dim, double thresh, float ratio, int p) {
+Rcpp::List ripser_vec(const Rcpp::NumericVector& dataset, int dim, double thresh, float ratio, int p) {
   std::vector<value_t> distances(dataset.begin(), dataset.end());
 
   // compare move with original vector
@@ -1360,11 +1356,11 @@ List ripser_vec(const NumericVector& dataset, int dim, double thresh, float rati
   // naming it the same thing will not affect anything, however
   std::vector<std::vector<std::pair<value_t, value_t>>> result = read_vector(ripser_obj);
 
-  List output(result.size());
+  Rcpp::List output(result.size());
   // same for d, we can rename if desired but stands for dimension
   for (size_t d = 0; d < result.size(); ++d) {
     const auto& pairs = result[d];
-    NumericMatrix mat(pairs.size(), 2);
+    Rcpp::NumericMatrix mat(pairs.size(), 2);
     for (size_t i = 0; i < pairs.size(); ++i) {
       mat(i, 0) = pairs[i].first;
       mat(i, 1) = pairs[i].second;
