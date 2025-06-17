@@ -571,7 +571,7 @@ public:
     columns_to_reduce.clear();
     std::vector<diameter_index_t> next_simplices;
 
-    thread_local simplex_coboundary_enumerator cofacets(*this);
+    simplex_coboundary_enumerator cofacets(*this);
 
     for (diameter_index_t& simplex : simplices) {
       cofacets.set_simplex(diameter_entry_t(simplex, 1), dim - 1);
