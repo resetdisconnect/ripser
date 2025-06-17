@@ -1222,7 +1222,10 @@ exit(exit_code);
    value_t val_thresh = static_cast<value_t>(thresh);
    coefficient_t coeff_p = static_cast<coefficient_t>(p);
 
-   Rcpp::XPtr<ripser<compressed_lower_distance_matrix>> ripser_obj(new ripser<compressed_lower_distance_matrix>(std::move(dist), idx_dim, val_thresh, ratio, coeff_p));
+   Rcpp::XPtr<ripser<compressed_lower_distance_matrix>> ripser_obj(
+       new ripser<compressed_lower_distance_matrix>(std::move(dist), idx_dim, val_thresh, ratio, coeff_p),
+       false
+   );
    ripser_obj->compute_barcodes();
    std::vector<std::vector<std::pair<value_t, value_t>>> result = ripser_obj->persistence_pairs;
 
