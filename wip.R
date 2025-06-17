@@ -1,6 +1,12 @@
 library(ripserq)
 dist_vec <- c(4, 3, 5, 5, 3, 4)
-result <- ripser_vec(dist_vec, dim = 1, thresh = 6.0, ratio = 1.0, p = 2)
+result <- ripser_vec(
+  dist_vec,
+  dim = 1,
+  thresh = 6.0,
+  ratio = 1.0,
+  p = 2
+)
 result
 
 # FIXME: Once output is handled one way (assignment to name versus print to
