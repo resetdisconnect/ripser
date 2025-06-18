@@ -516,7 +516,8 @@ public:
   };
 
   diameter_entry_t get_zero_pivot_facet(const diameter_entry_t simplex, const index_t dim) {
-    thread_local simplex_boundary_enumerator facets(0, *this);
+    // thread_local simplex_boundary_enumerator facets(0, *this);
+    simplex_boundary_enumerator facets(0, *this);
     facets.set_simplex(simplex, dim);
     while (facets.has_next()) {
       diameter_entry_t facet = facets.next();
@@ -529,7 +530,8 @@ public:
   }
 
   diameter_entry_t get_zero_pivot_cofacet(const diameter_entry_t simplex, const index_t dim) {
-    thread_local simplex_coboundary_enumerator cofacets(*this);
+    // thread_local simplex_coboundary_enumerator cofacets(*this);
+    simplex_coboundary_enumerator cofacets(*this);
     cofacets.set_simplex(simplex, dim);
     while (cofacets.has_next()) {
       diameter_entry_t cofacet = cofacets.next();
@@ -686,7 +688,8 @@ public:
   diameter_entry_t init_coboundary_and_get_pivot(const diameter_entry_t simplex,
                                                  Column& working_coboundary, const index_t& dim,
                                                  entry_hash_map& pivot_column_index) {
-    thread_local simplex_coboundary_enumerator cofacets(*this);
+    // thread_local simplex_coboundary_enumerator cofacets(*this);
+    simplex_coboundary_enumerator cofacets(*this);
     bool check_for_emergent_pair = true;
     cofacet_entries.clear();
     cofacets.set_simplex(simplex, dim);
@@ -709,7 +712,8 @@ public:
   template <typename Column>
   void add_simplex_coboundary(const diameter_entry_t simplex, const index_t& dim,
                               Column& working_reduction_column, Column& working_coboundary) {
-    thread_local simplex_coboundary_enumerator cofacets(*this);
+    // thread_local simplex_coboundary_enumerator cofacets(*this);
+    simplex_coboundary_enumerator cofacets(*this);
     working_reduction_column.push(simplex);
     cofacets.set_simplex(simplex, dim);
     while (cofacets.has_next()) {
@@ -1222,12 +1226,13 @@ exit(exit_code);
    value_t val_thresh = static_cast<value_t>(thresh);
    coefficient_t coeff_p = static_cast<coefficient_t>(p);
 
-   Rcpp::XPtr<ripser<compressed_lower_distance_matrix>> ripser_obj(
-       new ripser<compressed_lower_distance_matrix>(std::move(dist), idx_dim, val_thresh, ratio, coeff_p),
-       false
-   );
+   using RipserType = ripser<compressed_lower_distance_matrix>;
+   using PersistenceType = std::vector<std::vector<std::pair<value_t, value_t>>>;
+
+   auto ripser_ptr = new RipserType(std::move(dist), idx_dim, val_thresh, ratio, coeff_p);
+   Rcpp::XPtr<RipserType> ripser_obj(ripser_ptr, false);
    ripser_obj->compute_barcodes();
-   std::vector<std::vector<std::pair<value_t, value_t>>> result = ripser_obj->persistence_pairs;
+   PersistenceType result = ripser_obj->persistence_pairs;
 
    Rcpp::List output(result.size());
    // same for d, we can rename if desired but stands for dimension

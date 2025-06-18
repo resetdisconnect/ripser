@@ -13,15 +13,15 @@ result
 # console), attempting the other way crashes R.
 ripser_vec(dist_vec, dim = 1, thresh = 6.0, ratio = 1.0, p = 2)
 
-# # extra experiments
-#
-# euro_vec <- eurodist |> as.vector()
-# result_euro <- ripser_vec(euro_vec, dim = 1, thresh = 5000, ratio = 1.0, p = 2)
-#
-# # toy illustration
-# attr(result, "filtration") <- "Vietoris-Rips"
-# attr(result, "threshold") <- 6.0
-# attr(result, "max_dim") <- 1
+# extra experiments
+
+euro_vec <- eurodist |> as.vector()
+result_euro <- ripser_vec(euro_vec, dim = 1, thresh = 5000, ratio = 1.0, p = 2)
+
+# toy illustration
+attr(result, "filtration") <- "Vietoris-Rips"
+attr(result, "threshold") <- 6.0
+attr(result, "max_dim") <- 1
 
 library(phutil)
 as_persistence(result)
