@@ -1,5 +1,4 @@
 Version: 1.0
-ProjectId: 600ab79f-d4d1-4a0f-b77c-11ec9c12767b
 
 RestoreWorkspace: Default
 SaveWorkspace: Default
@@ -18,6 +17,5 @@ StripTrailingWhitespace: Yes
 
 BuildType: Package
 PackageUseDevtools: Yes
-PackagePath: ripserq
 PackageInstallArgs: --no-multiarch --with-keep.source
 PackageRoxygenize: rd,collate,namespace

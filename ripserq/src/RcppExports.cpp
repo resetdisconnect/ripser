@@ -11,12 +11,12 @@ Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
 // ripser_vec
-List ripser_vec(const NumericVector& dataset, int dim, double thresh, float ratio, int p);
+Rcpp::List ripser_vec(const Rcpp::NumericVector& dataset, int dim, double thresh, float ratio, int p);
 RcppExport SEXP _ripserq_ripser_vec(SEXP datasetSEXP, SEXP dimSEXP, SEXP threshSEXP, SEXP ratioSEXP, SEXP pSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const NumericVector& >::type dataset(datasetSEXP);
+    Rcpp::traits::input_parameter< const Rcpp::NumericVector& >::type dataset(datasetSEXP);
     Rcpp::traits::input_parameter< int >::type dim(dimSEXP);
     Rcpp::traits::input_parameter< double >::type thresh(threshSEXP);
     Rcpp::traits::input_parameter< float >::type ratio(ratioSEXP);

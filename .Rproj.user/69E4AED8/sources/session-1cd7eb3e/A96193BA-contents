@@ -1,3 +1,0 @@
-useDynLib(ripserq, .registration=TRUE)
-importFrom(Rcpp, evalCpp)
-export(ripser_vec)
