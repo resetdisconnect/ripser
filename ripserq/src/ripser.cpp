@@ -38,6 +38,8 @@
 
 //#define USE_COEFFICIENTS
 
+//#define INPUT_TYPE
+
 //#define INDICATE_PROGRESS
 //#define PRINT_PERSISTENCE_PAIRS
 #define COLLECT_PERSISTENCE_PAIRS
@@ -1006,6 +1008,7 @@ template <> std::vector<diameter_index_t> ripser<sparse_distance_matrix>::get_ed
     return edges;
 }
 
+#ifdef INPUT_TYPE
 enum file_format {
   LOWER_DISTANCE_MATRIX,
   UPPER_DISTANCE_MATRIX,
@@ -1181,6 +1184,7 @@ compressed_lower_distance_matrix read_file(std::istream& input_stream, const fil
     return read_binary(input_stream);
   }
 }
+#endif
 
 void print_usage_and_exit(int exit_code) {
   Rcpp::Rcerr
