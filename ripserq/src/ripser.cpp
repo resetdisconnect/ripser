@@ -1353,7 +1353,6 @@ int main(int argc, char** argv) {
  Rcpp::List ripser_vec(const Rcpp::NumericVector &dataset, int dim, double thresh, float ratio, int p) {
    std::vector<value_t> distances(dataset.begin(), dataset.end());
 
-   // compare move with original vector
    compressed_lower_distance_matrix dist(std::move(distances));
    index_t idx_dim = static_cast<index_t>(dim);
    value_t val_thresh = static_cast<value_t>(thresh);
@@ -1368,7 +1367,6 @@ int main(int argc, char** argv) {
    PersistenceType result = ripser_obj->persistence_pairs;
 
    Rcpp::List output(result.size());
-   // same for d, we can rename if desired but stands for dimension
    for (size_t d = 0; d < result.size(); ++d) {
      const auto& pairs = result[d];
      Rcpp::NumericMatrix mat(pairs.size(), 2);
